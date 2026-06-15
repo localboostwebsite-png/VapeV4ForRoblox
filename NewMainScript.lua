@@ -1,5 +1,5 @@
 local VAPE_REPO = 'localboostwebsite-png/VapeV4ForRoblox'
-local BUILD_ID = 'nova-bedwars-3'
+local BUILD_ID = 'nova-bedwars-4'
 shared.VapeNovaBuild = BUILD_ID
 
 local isfile = isfile or function(file)
@@ -16,18 +16,9 @@ local isfolder = isfolder or function(path)
 	return isfile(path) or pcall(function() makefolder(path) end)
 end
 
-local KICK_MARKERS = {
-	'Bedwars is no longer supported by Vape V4, thank you for 5 years of support',
-}
-
-local function fileHasKick(content)
+local function isLegacyKickScript(content)
 	if type(content) ~= 'string' then return false end
-	for _, marker in KICK_MARKERS do
-		if content:find(marker, 1, true) then
-			return true
-		end
-	end
-	return false
+	return content:find(':Kick', 1, true) ~= nil and content:find('5 years of support', 1, true) ~= nil
 end
 
 local function nukeFolder(path)
@@ -47,7 +38,7 @@ local function purgeKickFiles()
 			for _, file in listfiles(root) do
 				if isfile(file) and file:find('%.lua') then
 					local ok, content = pcall(readfile, file)
-					if ok and fileHasKick(content) then
+					if ok and isLegacyKickScript(content) then
 						pcall(function() delfile(file) end)
 					end
 				end
@@ -95,7 +86,7 @@ local function fetchFromGithub(relativePath, localPath)
 	if not suc or not res or res == '404: Not Found' then
 		error('Failed to download '..relativePath..' from '..VAPE_REPO..': '..tostring(res))
 	end
-	if fileHasKick(res) then
+	if relativePath ~= 'main.lua' and isLegacyKickScript(res) then
 		error('Blocked old Vape kick script in '..relativePath)
 	end
 	if res:sub(1, 3) == '\239\187\191' then

@@ -29,10 +29,16 @@ local isfile = isfile or function(file)
 	return suc and res ~= nil and res ~= ''
 end
 
+local function isLegacyKickScript(content)
+	return type(content) == 'string'
+		and content:find(':Kick', 1, true) ~= nil
+		and content:find('5 years of support', 1, true) ~= nil
+end
+
 local function downloadFile(path, func)
 	if isfile(path) then
 		local ok, existing = pcall(readfile, path)
-		if ok and existing and existing:find('Bedwars is no longer supported by Vape V4, thank you for 5 years of support', 1, true) then
+		if ok and isLegacyKickScript(existing) then
 			pcall(function() delfile(path) end)
 		end
 	end
