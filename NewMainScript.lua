@@ -1,5 +1,5 @@
 local VAPE_REPO = 'localboostwebsite-png/VapeV4ForRoblox'
-local BUILD_ID = 'nova-bedwars-2'
+local BUILD_ID = 'nova-bedwars-3'
 shared.VapeNovaBuild = BUILD_ID
 
 local isfile = isfile or function(file)
@@ -17,9 +17,7 @@ local isfolder = isfolder or function(path)
 end
 
 local KICK_MARKERS = {
-	'Bedwars is no longer supported',
-	'no longer supported by Vape V4',
-	'5 years of support',
+	'Bedwars is no longer supported by Vape V4, thank you for 5 years of support',
 }
 
 local function fileHasKick(content)
