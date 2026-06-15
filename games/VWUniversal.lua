@@ -1,0 +1,1 @@
+-- Optional Voidware universal extension (not required for BedWars).
