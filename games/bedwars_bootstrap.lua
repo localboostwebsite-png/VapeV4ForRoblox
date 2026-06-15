@@ -282,6 +282,29 @@ end)
 GuiLibrary = pload("GuiLibrary.lua", true, true)
 VWFunctions = pload("Libraries/voidwarefunctions.lua", true, true)
 
+if type(VWFunctions) ~= "table" then
+	error("voidwarefunctions.lua failed to load")
+end
+
+if not VWFunctions.GlobaliseObject then
+	VWFunctions.Connections = VWFunctions.Connections or {}
+	VWFunctions.SelfDestructEvent = VWFunctions.SelfDestructEvent or Instance.new("BindableEvent")
+	local controllers = {_registry = {}}
+	function controllers:register(name, obj)
+		self._registry[name] = obj
+	end
+	function controllers:get(name)
+		return self._registry[name]
+	end
+	VWFunctions.Controllers = controllers
+	function VWFunctions.GlobaliseObject(name, obj)
+		getgenv()[name] = obj
+	end
+end
+
+getgenv().VoidwareFunctions = VWFunctions
+getgenv().RenderFunctions = VWFunctions
+
 GuiLibrary.SelfDestructEvent.Event:Connect(function() VWFunctions.SelfDestructEvent:Fire() end)
 
 VWFunctions.GlobaliseObject("GuiLibrary", GuiLibrary)
