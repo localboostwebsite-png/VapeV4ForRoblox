@@ -2,7 +2,7 @@
 	local discord_code = "voidware"
 	shared.discord_code = discord_code
 	local commitFile = isfile("newvape/profiles/commit.txt") and "newvape/profiles/commit.txt" or (isfile("vape/commithash.txt") and "vape/commithash.txt" or nil)
-	local VERSION = "4.10"..(shared.VapePrivate and " PRIVATE" or "").." "..(commitFile and readfile(commitFile):sub(1, 6) or "bedwars")
+	local VERSION = "NOVA "..(shared.VapePrivate and "PRIVATE " or "")..(commitFile and readfile(commitFile):sub(1, 6) or "bedwars")
 	local baseDirectory = (shared.VapePrivate and "vapeprivate/" or "vape/")
 	local vapeAssetTable = {
 		["vape/assets/AddItem.png"] = "rbxassetid://13350763121",
@@ -970,10 +970,12 @@
 		windowlogo1.Active = false
 		windowlogo1.Position = UDim2.new(0, 11, 0, 12)
 		windowlogo1.BackgroundTransparency = 1
+		windowlogo1.Visible = false
 		windowlogo1.Image = downloadVapeAsset("vape/assets/VapeLogo1.png")
 		windowlogo1.Name = "Logo1"
 		windowlogo1.Parent = windowtitle
 		local windowlogo2 = Instance.new("ImageLabel")
+		windowlogo2.Visible = false
 		windowlogo2.Size = UDim2.new(0, 27, 0, 16)
 		windowlogo2.Active = false
 		windowlogo2.Position = UDim2.new(1, 1, 0, 1)
@@ -982,6 +984,36 @@
 		windowlogo2.Image = downloadVapeAsset("vape/assets/VapeLogo2.png")
 		windowlogo2.Name = "Logo2"
 		windowlogo2.Parent = windowlogo1
+		local novaBrand = Instance.new("TextLabel")
+		novaBrand.Name = "NovaBrand"
+		novaBrand.BackgroundTransparency = 1
+		novaBrand.Size = UDim2.new(0, 130, 0, 24)
+		novaBrand.Position = UDim2.new(0, 10, 0, 10)
+		novaBrand.Font = Enum.Font.GothamBlack
+		novaBrand.TextSize = 22
+		novaBrand.TextXAlignment = Enum.TextXAlignment.Left
+		novaBrand.Text = "NOVA"
+		novaBrand.TextColor3 = Color3.fromRGB(255, 120, 200)
+		novaBrand.Parent = windowtitle
+		local novaBrandGrad = Instance.new("UIGradient")
+		novaBrandGrad.Rotation = 25
+		novaBrandGrad.Color = ColorSequence.new({
+			ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 80, 140)),
+			ColorSequenceKeypoint.new(0.5, Color3.fromRGB(180, 80, 255)),
+			ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 200, 255))
+		})
+		novaBrandGrad.Parent = novaBrand
+		local novaSub = Instance.new("TextLabel")
+		novaSub.Name = "NovaSubtitle"
+		novaSub.BackgroundTransparency = 1
+		novaSub.Size = UDim2.new(0, 80, 0, 12)
+		novaSub.Position = UDim2.new(0, 12, 0, 30)
+		novaSub.Font = Enum.Font.GothamMedium
+		novaSub.TextSize = 10
+		novaSub.TextXAlignment = Enum.TextXAlignment.Left
+		novaSub.Text = "BEDWARS"
+		novaSub.TextColor3 = Color3.fromRGB(160, 140, 200)
+		novaSub.Parent = windowtitle
 		local settingstext = Instance.new("TextLabel")
 		settingstext.Size = UDim2.new(0, 155, 0, 41)
 		settingstext.BackgroundTransparency = 1
@@ -1010,7 +1042,7 @@
 		settingsbox2.TextColor3 = Color3.fromRGB(80, 80, 80)
 		settingsbox2.Font = Enum.Font.SourceSans
 		settingsbox2.TextXAlignment = Enum.TextXAlignment.Right
-		settingsbox2.Text = "Vape "..VERSION.."  "
+		settingsbox2.Text = "NOVA · BedWars  "
 		settingsbox2.TextSize = 16
 		settingsbox2.Parent = windowtitle
 		local settingsbox3 = Instance.new("Frame")

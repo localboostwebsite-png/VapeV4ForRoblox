@@ -49,6 +49,10 @@ local function downloadFile(path, func)
 		if not suc or res == '404: Not Found' then
 			error(res)
 		end
+		if res:sub(1, 3) == '\239\187\191' then
+			res = res:sub(4)
+		end
+		res = res:gsub('\239\187\191', '')
 		if path:find('.lua') then
 			res = '--This watermark is used to delete the file if its cached, remove it to make the file persist after vape updates.\n'..res
 		end
@@ -91,7 +95,8 @@ local function pload(fileName, isImportant, required)
 		end
 		return
 	end
-	local fn, err = loadstring(readfile(path), fileName)
+	local source = readfile(path):gsub('\239\187\191', '')
+	local fn, err = loadstring(source, fileName)
 	if type(fn) ~= 'function' then
 		if isImportant then
 			error(tostring(err or fn))

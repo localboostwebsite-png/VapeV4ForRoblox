@@ -188,7 +188,7 @@ end
 local function vapeGithubRequest(scripturl)
 	local path = resolveVoidwarePath(scripturl)
 	if isfile(path) then
-		return readfile(path)
+		return readfile(path):gsub("\239\187\191", "")
 	end
 	if scripturl == "VWUniversal.lua" then
 		return ""
@@ -210,8 +210,15 @@ local function vapeGithubRequest(scripturl)
 		displayErrorPopup("Failed to connect to github : "..scripturl.." : "..tostring(res))
 		error(res)
 	end
-	if scripturl:find(".lua") then res = "--This watermark is used to delete the file if its cached, remove it to make the file persist after commits.\n"..res end
+	if scripturl:find(".lua") then
+		if res and res:sub(1, 3) == "\239\187\191" then
+			res = res:sub(4)
+		end
+		res = res:gsub("\239\187\191", "")
+		res = "--This watermark is used to delete the file if its cached, remove it to make the file persist after commits.\n"..res
+	end
 	if res and res:sub(1, 3) == "\239\187\191" then res = res:sub(4) end
+	res = res and res:gsub("\239\187\191", "") or res
 	if not isfolder("newvape") then makefolder("newvape") end
 	writefile(path, res)
 	return res
@@ -323,6 +330,26 @@ end)
 
 local GUI = GuiLibrary.CreateMainWindow()
 VWFunctions.GlobaliseObject("GUI", GUI)
+pcall(function()
+	local click = GuiLibrary.MainGui.ScaledGui.ClickGui
+	click.BackgroundColor3 = Color3.fromRGB(10, 8, 20)
+	click.BackgroundTransparency = 0.12
+	local mainWin = click:FindFirstChild("MainWindow")
+	if mainWin then
+		mainWin.BackgroundColor3 = Color3.fromRGB(18, 12, 32)
+		local stroke = mainWin:FindFirstChild("NovaMenuStroke") or Instance.new("UIStroke")
+		stroke.Name = "NovaMenuStroke"
+		stroke.Color = Color3.fromRGB(255, 100, 180)
+		stroke.Thickness = 1.5
+		stroke.Transparency = 0.3
+		stroke.Parent = mainWin
+	end
+	for _, btn in click:GetChildren() do
+		if btn:IsA("TextButton") and btn.Name:find("Button") then
+			btn.BackgroundColor3 = Color3.fromRGB(24, 16, 40)
+		end
+	end
+end)
 local Combat = GuiLibrary.CreateWindow({
 	Name = "Combat",
 	Icon = "vape/assets/CombatIcon.png",

@@ -1,5 +1,5 @@
 local VAPE_REPO = 'localboostwebsite-png/VapeV4ForRoblox'
-local BUILD_ID = 'nova-bedwars-4'
+local BUILD_ID = 'nova-bedwars-5'
 shared.VapeNovaBuild = BUILD_ID
 
 local isfile = isfile or function(file)
@@ -92,6 +92,7 @@ local function fetchFromGithub(relativePath, localPath)
 	if res:sub(1, 3) == '\239\187\191' then
 		res = res:sub(4)
 	end
+	res = res:gsub('\239\187\191', '')
 	if relativePath:find('%.lua') then
 		res = '--This watermark is used to delete the file if its cached, remove it to make the file persist after vape updates.\n'..res
 	end
