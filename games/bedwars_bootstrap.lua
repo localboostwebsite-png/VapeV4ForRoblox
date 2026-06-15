@@ -305,8 +305,6 @@ end
 getgenv().VoidwareFunctions = VWFunctions
 getgenv().RenderFunctions = VWFunctions
 
-getgenv().RenderFunctions = VWFunctions
-
 local function disableVapeV4Menu()
 	pcall(function()
 		if shared.vape then
