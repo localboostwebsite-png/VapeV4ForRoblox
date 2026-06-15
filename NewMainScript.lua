@@ -1,3 +1,6 @@
+local VAPE_REPO = 'localboostwebsite-png/VapeV4ForRoblox'
+local BUILD_ID = 'nova-bedwars-1'
+
 local isfile = isfile or function(file)
 	local suc, res = pcall(function()
 		return readfile(file)
@@ -11,7 +14,7 @@ end
 local function downloadFile(path, func)
 	if not isfile(path) then
 		local suc, res = pcall(function()
-			return game:HttpGet('https://raw.githubusercontent.com/7GrandDadPGN/VapeV4ForRoblox/'..readfile('newvape/profiles/commit.txt')..'/'..select(1, path:gsub('newvape/', '')), true)
+			return game:HttpGet('https://raw.githubusercontent.com/'..VAPE_REPO..'/'..readfile('newvape/profiles/commit.txt')..'/'..select(1, path:gsub('newvape/', '')), true)
 		end)
 		if not suc or res == '404: Not Found' then
 			error(res)
@@ -40,9 +43,21 @@ for _, folder in {'newvape', 'newvape/games', 'newvape/profiles', 'newvape/asset
 	end
 end
 
+if not isfolder('newvape/profiles') then
+	makefolder('newvape/profiles')
+end
+local cachedBuild = isfile('newvape/profiles/build.txt') and readfile('newvape/profiles/build.txt') or ''
+if cachedBuild ~= BUILD_ID then
+	wipeFolder('newvape')
+	wipeFolder('newvape/games')
+	wipeFolder('newvape/guis')
+	wipeFolder('newvape/libraries')
+	writefile('newvape/profiles/build.txt', BUILD_ID)
+end
+
 if not shared.VapeDeveloper then
 	local _, subbed = pcall(function()
-		return game:HttpGet('https://github.com/7GrandDadPGN/VapeV4ForRoblox')
+		return game:HttpGet('https://github.com/'..VAPE_REPO)
 	end)
 	local commit = subbed:find('currentOid')
 	commit = commit and subbed:sub(commit + 13, commit + 52) or nil

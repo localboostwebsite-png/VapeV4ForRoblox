@@ -145,6 +145,27 @@ local function displayErrorPopup(text, funclist)
 	end)
 end
 
+local VAPE_REPO = "localboostwebsite-png/VapeV4ForRoblox"
+
+local function resolveGithubPath(scripturl)
+	local mapped = {
+		["GuiLibrary.lua"] = "guis/GuiLibrary.lua",
+		["Universal.lua"] = "games/universal_voidware.lua",
+		["VWUniversal.lua"] = "games/VWUniversal.lua",
+		["CustomModules/6872274481.lua"] = "games/6872274481.lua",
+		["CustomModules/6872265039.lua"] = "games/6872265039.lua",
+		["CustomModules/VW6872274481.lua"] = "games/VWUniversal.lua",
+		["CustomModules/VW6872265039.lua"] = "games/VWUniversal.lua",
+		["Libraries/voidwarefunctions.lua"] = "libraries/voidwarefunctions.lua",
+		["Libraries/ProtectedModules.lua"] = "libraries/ProtectedModules.lua",
+		["Libraries/Protected_6872274481.lua"] = "libraries/Protected_6872274481.lua",
+		["Libraries/dex_explorer.lua"] = "libraries/dex_explorer.lua",
+		["games/dex_module.lua"] = "games/dex_module.lua",
+		["guis/custom_theme.lua"] = "guis/custom_theme.lua",
+	}
+	return mapped[scripturl] or scripturl:gsub("^vape/", "")
+end
+
 local function resolveVoidwarePath(scripturl)
 	scripturl = scripturl:gsub("^vape/", "newvape/")
 	local mapped = {
@@ -180,7 +201,8 @@ local function vapeGithubRequest(scripturl)
 		end
 	end)
 	local commit = isfile("newvape/profiles/commit.txt") and readfile("newvape/profiles/commit.txt") or "main"
-	suc, res = pcall(function() return game:HttpGet("https://raw.githubusercontent.com/endmylifehahahahahahahahaha/vapevoidware/"..commit.."/"..scripturl, true) end)
+	local githubPath = resolveGithubPath(scripturl)
+	suc, res = pcall(function() return game:HttpGet("https://raw.githubusercontent.com/"..VAPE_REPO.."/"..commit.."/"..githubPath, true) end)
 	if not suc or res == "404: Not Found" then
 		if scripturl:find("Protected") or scripturl == "VWUniversal.lua" then
 			return ""
@@ -2029,10 +2051,10 @@ if shared.BACKUPTELEPORTMODE then
 					if isfile('vape/NewMainScript.lua') then
 						loadstring(readfile("vape/NewMainScript.lua"))()
 					else
-						loadstring(game:HttpGet("https://raw.githubusercontent.com/endmylifehahahahahahahahaha/vapevoidware/main/NewMainScript.lua", true))()
+						loadstring(game:HttpGet("https://raw.githubusercontent.com/localboostwebsite-png/VapeV4ForRoblox/main/NewMainScript.lua", true))()
 					end
 				else
-					loadstring(game:HttpGet("https://raw.githubusercontent.com/endmylifehahahahahahahahaha/vapevoidware/main/NewMainScript.lua", true))()
+					loadstring(game:HttpGet("https://raw.githubusercontent.com/localboostwebsite-png/VapeV4ForRoblox/main/NewMainScript.lua", true))()
 				end
 			]]
 			if shared.VapeDeveloper then
@@ -2085,10 +2107,10 @@ else
 							if isfile('vape/NewMainScript.lua') then
 								loadstring(readfile("vape/NewMainScript.lua"))()
 							else
-								loadstring(game:HttpGet("https://raw.githubusercontent.com/endmylifehahahahahahahahaha/vapevoidware/main/NewMainScript.lua", true))()
+								loadstring(game:HttpGet("https://raw.githubusercontent.com/localboostwebsite-png/VapeV4ForRoblox/main/NewMainScript.lua", true))()
 							end
 						else
-							loadstring(game:HttpGet("https://raw.githubusercontent.com/endmylifehahahahahahahahaha/vapevoidware/main/NewMainScript.lua", true))()
+							loadstring(game:HttpGet("https://raw.githubusercontent.com/localboostwebsite-png/VapeV4ForRoblox/main/NewMainScript.lua", true))()
 						end
 					end
 				]]

@@ -3,6 +3,8 @@ if shared.vape then
 	pcall(function() shared.vape:Uninject() end)
 end
 
+local VAPE_REPO = 'localboostwebsite-png/VapeV4ForRoblox'
+
 local BEDWARS_GAME = {6872274481, 8444591321, 8560631822}
 local BEDWARS_LOBBY = {6872265039}
 local function isBedwarsPlace()
@@ -30,7 +32,7 @@ end
 local function downloadFile(path, func)
 	if not isfile(path) then
 		local suc, res = pcall(function()
-			return game:HttpGet('https://raw.githubusercontent.com/7GrandDadPGN/VapeV4ForRoblox/'..readfile('newvape/profiles/commit.txt')..'/'..select(1, path:gsub('newvape/', '')), true)
+			return game:HttpGet('https://raw.githubusercontent.com/'..VAPE_REPO..'/'..readfile('newvape/profiles/commit.txt')..'/'..select(1, path:gsub('newvape/', '')), true)
 		end)
 		if not suc or res == '404: Not Found' then
 			error(res)
@@ -65,6 +67,11 @@ local function pload(fileName, isImportant, required)
 	if fileName:find('VWUniversal') and not isfile(path) then
 		if required then return {} end
 		return
+	end
+	if not isfile(path) then
+		pcall(function()
+			downloadFile(path)
+		end)
 	end
 	if not isfile(path) then
 		if isImportant then
