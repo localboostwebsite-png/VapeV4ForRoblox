@@ -1,6 +1,5 @@
 --[[
-	Custom UI theme for BedWars build.
-	Called after GuiLibrary finishes loading.
+	Custom UI theme for BedWars build — animated rainbow accents.
 ]]
 
 local Theme = {
@@ -13,16 +12,20 @@ local Theme = {
 	HueSecondary = 0.73,
 	SatSecondary = 0.88,
 	ValSecondary = 0.62,
-	Panel = Color3.fromRGB(13, 11, 20),
-	PanelElevated = Color3.fromRGB(20, 16, 30),
-	Overlay = Color3.fromRGB(8, 6, 14),
+	Panel = Color3.fromRGB(10, 8, 18),
+	PanelElevated = Color3.fromRGB(16, 12, 26),
+	Overlay = Color3.fromRGB(6, 4, 12),
 	Text = Color3.fromRGB(238, 232, 248),
 	TextDim = Color3.fromRGB(128, 118, 150),
 	Stroke = Color3.fromRGB(55, 38, 82),
 	Notification = Color3.fromRGB(255, 70, 120),
 	CornerRadius = UDim.new(0, 8),
-	FriendColor = Color3.fromRGB(255, 70, 130)
+	FriendColor = Color3.fromRGB(255, 70, 130),
+	RainbowSpeed = 0.22
 }
+
+local rainbowConnection
+local rainbowTargets = {}
 
 local function ensureCorner(parent, radius)
 	local corner = parent:FindFirstChildOfClass('UICorner')
@@ -44,30 +47,35 @@ local function ensureStroke(parent, color, thickness)
 	stroke.Color = color or Theme.Stroke
 	stroke.Thickness = thickness or 1
 	stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-	stroke.Transparency = 0.35
+	stroke.Transparency = 0.2
 	return stroke
 end
 
-local function applyGradient(label, rotation)
+local function applyGradient(label, rotation, hueOffset)
 	local gradient = label:FindFirstChildOfClass('UIGradient') or Instance.new('UIGradient', label)
 	gradient.Rotation = rotation or 35
+	local h1 = ((hueOffset or 0) + Theme.HuePrimary) % 1
+	local h2 = ((hueOffset or 0) + 0.18 + Theme.HueSecondary) % 1
+	local h3 = ((hueOffset or 0) + 0.36 + Theme.HuePrimary) % 1
 	gradient.Color = ColorSequence.new({
-		ColorSequenceKeypoint.new(0, Color3.fromHSV(Theme.HuePrimary, Theme.SatPrimary, Theme.ValPrimary + 0.15)),
-		ColorSequenceKeypoint.new(0.5, Color3.fromHSV(Theme.HueSecondary, Theme.SatSecondary, Theme.ValSecondary + 0.1)),
-		ColorSequenceKeypoint.new(1, Color3.fromHSV(Theme.HuePrimary, Theme.SatPrimary * 0.85, Theme.ValPrimary))
+		ColorSequenceKeypoint.new(0, Color3.fromHSV(h1, 1, 1)),
+		ColorSequenceKeypoint.new(0.5, Color3.fromHSV(h2, 1, 1)),
+		ColorSequenceKeypoint.new(1, Color3.fromHSV(h3, 1, 1))
 	})
+	table.insert(rainbowTargets, {Type = 'Gradient', Object = gradient})
 	return gradient
+end
+
+local function trackStroke(stroke)
+	table.insert(rainbowTargets, {Type = 'Stroke', Object = stroke})
+	return stroke
 end
 
 local function replaceMainLogo(mainWindow)
 	local logo1 = mainWindow:FindFirstChild('Logo1', true)
-	if logo1 then
-		logo1.Visible = false
-	end
+	if logo1 then logo1.Visible = false end
 	local logo2 = mainWindow:FindFirstChild('Logo2', true)
-	if logo2 then
-		logo2.Visible = false
-	end
+	if logo2 then logo2.Visible = false end
 
 	local brand = mainWindow:FindFirstChild('NovaBrand')
 	if not brand then
@@ -81,7 +89,7 @@ local function replaceMainLogo(mainWindow)
 		brand.TextXAlignment = Enum.TextXAlignment.Left
 		brand.Text = Theme.Brand
 		brand.Parent = mainWindow
-		applyGradient(brand, 25)
+		applyGradient(brand, 25, 0)
 	end
 
 	local sub = mainWindow:FindFirstChild('NovaSubtitle')
@@ -97,25 +105,14 @@ local function replaceMainLogo(mainWindow)
 		sub.TextColor3 = Theme.TextDim
 		sub.Text = Theme.Subtitle
 		sub.Parent = mainWindow
+		table.insert(rainbowTargets, {Type = 'Text', Object = sub, Base = Theme.TextDim, Amp = 0.35})
 	end
 
-	local version = mainWindow:FindFirstChild('SettingsTitle') and mainWindow:FindFirstChild('SettingsTitle').Parent and mainWindow:FindFirstChild('SettingsTitle')
-	if not version then
-		for _, child in mainWindow:GetChildren() do
-			if child:IsA('TextLabel') and child.Text:find('Vape') then
-				child.Text = Theme.VersionTag..'  '
-				child.TextColor3 = Theme.TextDim
-				child.Font = Enum.Font.Gotham
-				break
-			end
-		end
-	else
-		for _, child in mainWindow:GetChildren() do
-			if child:IsA('TextLabel') and child.Text:find('Vape') then
-				child.Text = Theme.VersionTag..'  '
-				child.TextColor3 = Theme.TextDim
-				child.Font = Enum.Font.Gotham
-			end
+	for _, child in mainWindow:GetChildren() do
+		if child:IsA('TextLabel') and child.Text:find('Vape') then
+			child.Text = Theme.VersionTag..'  '
+			child.TextColor3 = Theme.TextDim
+			child.Font = Enum.Font.Gotham
 		end
 	end
 end
@@ -125,7 +122,7 @@ local function stylePanel(frame)
 	if frame.Name == 'MainWindow' or frame.Name == 'SearchBar' or frame.Name:find('Window') then
 		frame.BackgroundColor3 = Theme.Panel
 		ensureCorner(frame)
-		ensureStroke(frame)
+		trackStroke(ensureStroke(frame))
 	end
 	if frame.Name == 'SearchBar' then
 		local search = frame:FindFirstChildWhichIsA('TextBox', true)
@@ -137,12 +134,39 @@ local function stylePanel(frame)
 	end
 end
 
+local function startRainbowLoop()
+	if rainbowConnection then
+		rainbowConnection:Disconnect()
+	end
+	local runService = game:GetService('RunService')
+	rainbowConnection = runService.RenderStepped:Connect(function()
+		local t = tick() * Theme.RainbowSpeed
+		local baseHue = t % 1
+		for _, entry in rainbowTargets do
+			pcall(function()
+				if entry.Type == 'Gradient' and entry.Object then
+					entry.Object.Color = ColorSequence.new({
+						ColorSequenceKeypoint.new(0, Color3.fromHSV(baseHue, 1, 1)),
+						ColorSequenceKeypoint.new(0.5, Color3.fromHSV((baseHue + 0.2) % 1, 1, 1)),
+						ColorSequenceKeypoint.new(1, Color3.fromHSV((baseHue + 0.45) % 1, 1, 1))
+					})
+				elseif entry.Type == 'Stroke' and entry.Object then
+					entry.Object.Color = Color3.fromHSV((baseHue + 0.1) % 1, 1, 1)
+				elseif entry.Type == 'Text' and entry.Object then
+					entry.Object.TextColor3 = Color3.fromHSV((baseHue + 0.5) % 1, 0.85, 1)
+				end
+			end)
+		end
+	end)
+end
+
 local function applyCustomTheme(GuiLibrary, options)
 	options = options or {}
 	local brand = options.Brand or Theme.Brand
 	local subtitle = options.Subtitle or Theme.Subtitle
 	Theme.Brand = brand
 	Theme.Subtitle = subtitle
+	table.clear(rainbowTargets)
 
 	if not GuiLibrary or not GuiLibrary.MainGui then return Theme end
 
@@ -159,7 +183,7 @@ local function applyCustomTheme(GuiLibrary, options)
 	if mainWindow then
 		mainWindow.BackgroundColor3 = Theme.PanelElevated
 		ensureCorner(mainWindow, UDim.new(0, 10))
-		ensureStroke(mainWindow, Color3.fromHSV(Theme.HuePrimary, Theme.SatPrimary, Theme.ValPrimary), 1.5)
+		trackStroke(ensureStroke(mainWindow, Color3.fromHSV(0, 1, 1), 1.5))
 		replaceMainLogo(mainWindow)
 	end
 
@@ -167,7 +191,7 @@ local function applyCustomTheme(GuiLibrary, options)
 	if searchBar then
 		searchBar.BackgroundColor3 = Theme.Panel
 		ensureCorner(searchBar)
-		ensureStroke(searchBar)
+		trackStroke(ensureStroke(searchBar))
 	end
 
 	for _, desc in GuiLibrary.MainGui:GetDescendants() do
@@ -180,7 +204,7 @@ local function applyCustomTheme(GuiLibrary, options)
 			desc.BackgroundColor3 = Theme.PanelElevated
 			desc.TextColor3 = Theme.Text
 			ensureCorner(desc, UDim.new(0, 6))
-			ensureStroke(desc, Color3.fromHSV(Theme.HuePrimary, Theme.SatPrimary, Theme.ValPrimary))
+			trackStroke(ensureStroke(desc, Color3.fromHSV(0, 1, 1)))
 		end
 	end
 
@@ -198,6 +222,7 @@ local function applyCustomTheme(GuiLibrary, options)
 		end
 	end
 
+	startRainbowLoop()
 	return Theme
 end
 

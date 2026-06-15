@@ -1675,6 +1675,25 @@ GradientUIToggle = GUI.CreateToggle({
 	end
 })
 pcall(function() GradientUIToggle.ToggleButton(true) end)
+local function enableRainbowUI()
+	pcall(function()
+		if GUIColorSlider and GUIColorSlider.SetRainbow then
+			GUIColorSlider.SetRainbow(true)
+		end
+		if GUIGradientSlider and GUIGradientSlider.SetRainbow then
+			GUIGradientSlider.SetRainbow(true)
+		end
+		if GradientUIToggle and GradientUIToggle.ToggleButton then
+			GradientUIToggle.ToggleButton(true)
+		end
+		if TextGUIGradient and TextGUIGradient.ToggleButton then
+			TextGUIGradient.ToggleButton(true)
+		end
+		GuiLibrary.GradientMode = true
+		GuiLibrary.UpdateUI(GUIColor1.Hue, GUIColor1.Sat, GUIColor1.Value, true)
+	end)
+end
+task.defer(enableRainbowUI)
 local BlatantModeToggle = GUI.CreateToggle({
 	Name = "Blatant mode",
 	Function = function() end,
@@ -2345,6 +2364,7 @@ local function loadVape()
 	ProfilesTextList.RefreshValues(profiles)
 	GUIbind.Reload()
 	TextGUIUpdate()
+	enableRainbowUI()
 	GuiLibrary.UpdateUI(GUIColor1.Hue, GUIColor1.Sat, GUIColor1.Value, true)
 	pcall(function()
 		local src
@@ -2360,6 +2380,7 @@ local function loadVape()
 			end
 		end
 	end)
+	enableRainbowUI()
 	if not shared.VapeSwitchServers then
 		if BlatantModeToggle.Enabled then
 			pcall(function()

@@ -1,5 +1,6 @@
 local VAPE_REPO = 'localboostwebsite-png/VapeV4ForRoblox'
-local BUILD_ID = 'nova-bedwars-1'
+local BUILD_ID = 'nova-bedwars-2'
+shared.VapeNovaBuild = BUILD_ID
 
 local isfile = isfile or function(file)
 	local suc, res = pcall(function()
@@ -10,29 +11,49 @@ end
 local delfile = delfile or function(file)
 	writefile(file, '')
 end
-
-local function downloadFile(path, func)
-	if not isfile(path) then
-		local suc, res = pcall(function()
-			return game:HttpGet('https://raw.githubusercontent.com/'..VAPE_REPO..'/'..readfile('newvape/profiles/commit.txt')..'/'..select(1, path:gsub('newvape/', '')), true)
-		end)
-		if not suc or res == '404: Not Found' then
-			error(res)
-		end
-		if path:find('.lua') then
-			res = '--This watermark is used to delete the file if its cached, remove it to make the file persist after vape updates.\n'..res
-		end
-		writefile(path, res)
-	end
-	return (func or readfile)(path)
+local listfiles = listfiles or function() return {} end
+local isfolder = isfolder or function(path)
+	return isfile(path) or pcall(function() makefolder(path) end)
 end
 
-local function wipeFolder(path)
+local KICK_MARKERS = {
+	'Bedwars is no longer supported',
+	'no longer supported by Vape V4',
+	'5 years of support',
+}
+
+local function fileHasKick(content)
+	if type(content) ~= 'string' then return false end
+	for _, marker in KICK_MARKERS do
+		if content:find(marker, 1, true) then
+			return true
+		end
+	end
+	return false
+end
+
+local function nukeFolder(path)
 	if not isfolder(path) then return end
 	for _, file in listfiles(path) do
-		if file:find('loader') then continue end
-		if isfile(file) and select(1, readfile(file):find('--This watermark is used to delete the file if its cached, remove it to make the file persist after vape updates.')) == 1 then
-			delfile(file)
+		if isfile(file) then
+			pcall(function() delfile(file) end)
+		elseif isfolder(file) then
+			nukeFolder(file)
+		end
+	end
+end
+
+local function purgeKickFiles()
+	for _, root in {'newvape', 'vape'} do
+		if isfolder(root) then
+			for _, file in listfiles(root) do
+				if isfile(file) and file:find('%.lua') then
+					local ok, content = pcall(readfile, file)
+					if ok and fileHasKick(content) then
+						pcall(function() delfile(file) end)
+					end
+				end
+			end
 		end
 	end
 end
@@ -43,32 +64,52 @@ for _, folder in {'newvape', 'newvape/games', 'newvape/profiles', 'newvape/asset
 	end
 end
 
-if not isfolder('newvape/profiles') then
-	makefolder('newvape/profiles')
-end
 local cachedBuild = isfile('newvape/profiles/build.txt') and readfile('newvape/profiles/build.txt') or ''
 if cachedBuild ~= BUILD_ID then
-	wipeFolder('newvape')
-	wipeFolder('newvape/games')
-	wipeFolder('newvape/guis')
-	wipeFolder('newvape/libraries')
+	nukeFolder('newvape/games')
+	nukeFolder('newvape/guis')
+	nukeFolder('newvape/libraries')
+	purgeKickFiles()
 	writefile('newvape/profiles/build.txt', BUILD_ID)
 end
+purgeKickFiles()
 
+local branch = 'main'
 if not shared.VapeDeveloper then
 	local _, subbed = pcall(function()
 		return game:HttpGet('https://github.com/'..VAPE_REPO)
 	end)
-	local commit = subbed:find('currentOid')
-	commit = commit and subbed:sub(commit + 13, commit + 52) or nil
-	commit = commit and #commit == 40 and commit or 'main'
-	if commit == 'main' or (isfile('newvape/profiles/commit.txt') and readfile('newvape/profiles/commit.txt') or '') ~= commit then
-		wipeFolder('newvape')
-		wipeFolder('newvape/games')
-		wipeFolder('newvape/guis')
-		wipeFolder('newvape/libraries')
+	if subbed then
+		local commit = subbed:find('currentOid')
+		commit = commit and subbed:sub(commit + 13, commit + 52) or nil
+		if commit and #commit == 40 then
+			branch = commit
+		end
 	end
-	writefile('newvape/profiles/commit.txt', commit)
+	writefile('newvape/profiles/commit.txt', branch)
 end
 
-return loadstring(downloadFile('newvape/main.lua'), 'main')()
+local function fetchFromGithub(relativePath, localPath)
+	local url = 'https://raw.githubusercontent.com/'..VAPE_REPO..'/'..branch..'/'..relativePath
+	local suc, res = pcall(function()
+		return game:HttpGet(url, true)
+	end)
+	if not suc or not res or res == '404: Not Found' then
+		error('Failed to download '..relativePath..' from '..VAPE_REPO..': '..tostring(res))
+	end
+	if fileHasKick(res) then
+		error('Blocked old Vape kick script in '..relativePath)
+	end
+	if res:sub(1, 3) == '\239\187\191' then
+		res = res:sub(4)
+	end
+	if relativePath:find('%.lua') then
+		res = '--This watermark is used to delete the file if its cached, remove it to make the file persist after vape updates.\n'..res
+	end
+	writefile(localPath, res)
+	return res
+end
+
+-- Always fetch entry main.lua fresh so stale cache cannot load old Vape
+local mainSource = fetchFromGithub('main.lua', 'newvape/main.lua')
+return loadstring(mainSource, 'main')()

@@ -30,6 +30,12 @@ local isfile = isfile or function(file)
 end
 
 local function downloadFile(path, func)
+	if isfile(path) then
+		local ok, existing = pcall(readfile, path)
+		if ok and existing and (existing:find('Bedwars is no longer supported', 1, true) or existing:find('no longer supported by Vape V4', 1, true)) then
+			pcall(function() delfile(path) end)
+		end
+	end
 	if not isfile(path) then
 		local suc, res = pcall(function()
 			return game:HttpGet('https://raw.githubusercontent.com/'..VAPE_REPO..'/'..readfile('newvape/profiles/commit.txt')..'/'..select(1, path:gsub('newvape/', '')), true)
