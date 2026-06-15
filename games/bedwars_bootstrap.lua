@@ -326,6 +326,9 @@ VWFunctions.GlobaliseObject("GuiLibrary", GuiLibrary)
 VWFunctions.GlobaliseObject("VoidwareFunctions", VWFunctions)
 VWFunctions.GlobaliseObject("VWFunctions", VWFunctions)
 
+GuiLibrary.UpdateUI = function() end
+GuiLibrary.UpdateUI2 = function() end
+
 local saveSettingsLoop = coroutine.create(function()
 	if inputService.TouchEnabled then return end
 	repeat
@@ -1220,18 +1223,22 @@ local function TextGUIUpdate()
 			})
         end
 
-		GuiLibrary.UpdateUI(GUIColor1.Hue, GUIColor1.Sat, GUIColor1.Value)
+		if GuiLibrary.UpdateUI then
+			GuiLibrary.UpdateUI(GUIColor1.Hue, GUIColor1.Sat, GUIColor1.Value)
+		end
 	end
 end
 
-TextGUI.GetCustomChildren().Parent:GetPropertyChangedSignal("Position"):Connect(TextGUIUpdate)
-GuiLibrary.UpdateHudEvent.Event:Connect(TextGUIUpdate)
-VapeScale:GetPropertyChangedSignal("Scale"):Connect(function()
-	local childrenobj = TextGUI.GetCustomChildren()
-	local check = (childrenobj.Parent.Position.X.Offset + childrenobj.Parent.Size.X.Offset / 2) >= (gameCamera.ViewportSize.X / 2)
-	childrenobj.Position = UDim2.new((check and -(VapeScale.Scale - 1) or 0), (check and 0 or -6 * (VapeScale.Scale - 1)), 1, -6 * (VapeScale.Scale - 1))
-	TextGUIUpdate()
-end)
+local function hookTextGUIUpdates()
+	TextGUI.GetCustomChildren().Parent:GetPropertyChangedSignal("Position"):Connect(TextGUIUpdate)
+	GuiLibrary.UpdateHudEvent.Event:Connect(TextGUIUpdate)
+	VapeScale:GetPropertyChangedSignal("Scale"):Connect(function()
+		local childrenobj = TextGUI.GetCustomChildren()
+		local check = (childrenobj.Parent.Position.X.Offset + childrenobj.Parent.Size.X.Offset / 2) >= (gameCamera.ViewportSize.X / 2)
+		childrenobj.Position = UDim2.new((check and -(VapeScale.Scale - 1) or 0), (check and 0 or -6 * (VapeScale.Scale - 1)), 1, -6 * (VapeScale.Scale - 1))
+		TextGUIUpdate()
+	end)
+end
 local TextGUIColorModeChanged = Instance.new("BindableEvent")
 TextGUIColorMode = TextGUI.CreateDropdown({
 	Name = "ColorFill",
@@ -1659,7 +1666,9 @@ local VWSettings = GUI.CreateDivider2("VW Settings")
 local StreamerModeToggle = {Enabled = false}
 VoidwareFunctions.Controllers:register("UpdateUI", {UIUpdate = Instance.new("BindableEvent")})
 VoidwareFunctions.Controllers:get("UpdateUI").UIUpdate.Event:Connect(function(h,s,v)
-	GuiLibrary.UpdateUI(h,s,v)
+	if GuiLibrary.UpdateUI then
+		GuiLibrary.UpdateUI(h,s,v)
+	end
 end)
 StreamerModeToggle = VWSettings.CreateToggle({
 	Name = "StreamerMode",
@@ -2052,6 +2061,7 @@ GuiLibrary.UpdateUI = function(h, s, val, bypass)
 		--print("UPDATEUI", suc, err)
 	end
 end
+hookTextGUIUpdates()
 
 GUISettings.CreateToggle({
 	Name = "Blur Background",
