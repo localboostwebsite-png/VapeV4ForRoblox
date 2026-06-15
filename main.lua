@@ -116,20 +116,28 @@ shared.VapeIndependent = true
 local vape = loadstring(downloadFile('newvape/guis/new.lua'), 'gui')()
 shared.vape = vape
 
+local function disableVapeV4Menu()
+	pcall(function()
+		vape.Keybind = {'F15'}
+		if vape.gui and vape.gui:FindFirstChild('ScaledGui') then
+			local clickGui = vape.gui.ScaledGui:FindFirstChild('ClickGui')
+			if clickGui then
+				clickGui.Visible = false
+				clickGui:Destroy()
+			end
+		end
+	end)
+end
+disableVapeV4Menu()
+
 loadstring(downloadFile('newvape/games/bedwars_bootstrap.lua'), 'bedwars_bootstrap')()
 
-if vape.Init then
-	vape.Init()
-end
+disableVapeV4Menu()
 
-pcall(function()
-	if vape.gui and vape.gui.ScaledGui and vape.gui.ScaledGui.ClickGui then
-		vape.gui.ScaledGui.ClickGui.Visible = false
-	end
-end)
-
-if not shared.vapereload and vape.Categories and vape.Categories.Main and vape.Categories.Main.Options['GUI bind indicator'] then
-	if vape.Categories.Main.Options['GUI bind indicator'].Enabled then
-		vape:CreateNotification('NOVA Loaded', 'Press RIGHT SHIFT to open the menu', 8)
-	end
+if not shared.vapereload then
+	pcall(function()
+		if shared.GuiLibrary and shared.GuiLibrary.CreateNotification then
+			shared.GuiLibrary.CreateNotification('NOVA Loaded', 'Press RIGHT SHIFT to open the menu', 8, 'assets/InfoNotification.png')
+		end
+	end)
 end

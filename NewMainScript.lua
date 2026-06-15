@@ -1,5 +1,5 @@
 local VAPE_REPO = 'localboostwebsite-png/VapeV4ForRoblox'
-local BUILD_ID = 'nova-bedwars-6'
+local BUILD_ID = 'nova-bedwars-7'
 shared.VapeNovaBuild = BUILD_ID
 
 local isfile = isfile or function(file)

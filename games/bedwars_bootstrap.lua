@@ -305,6 +305,23 @@ end
 getgenv().VoidwareFunctions = VWFunctions
 getgenv().RenderFunctions = VWFunctions
 
+getgenv().RenderFunctions = VWFunctions
+
+local function disableVapeV4Menu()
+	pcall(function()
+		if shared.vape then
+			shared.vape.Keybind = {'F15'}
+			if shared.vape.gui and shared.vape.gui:FindFirstChild('ScaledGui') then
+				local clickGui = shared.vape.gui.ScaledGui:FindFirstChild('ClickGui')
+				if clickGui then
+					clickGui.Visible = false
+					clickGui:Destroy()
+				end
+			end
+		end
+	end)
+end
+
 GuiLibrary.SelfDestructEvent.Event:Connect(function() VWFunctions.SelfDestructEvent:Fire() end)
 
 VWFunctions.GlobaliseObject("GuiLibrary", GuiLibrary)
@@ -453,12 +470,14 @@ GUI.CreateDivider("MISC")
 GUI.CreateButton({
 	Name = "Friends",
 	Function = function(callback) Friends.SetVisible(callback) end,
-	Icon = "vape/assets/FriendsIcon.png"
+	Icon = "vape/assets/FriendsIcon.png",
+	IconSize = 16
 })
 GUI.CreateButton({
 	Name = "Targets",
 	Function = function(callback) Targets.SetVisible(callback) end,
-	Icon = "vape/assets/FriendsIcon.png"
+	Icon = "vape/assets/FriendsIcon.png",
+	IconSize = 16
 })
 GUI.CreateButton({
 	Name = "Profiles",
@@ -2456,6 +2475,7 @@ local function loadVape()
 	end
 	coroutine.resume(saveSettingsLoop)
 	shared.VapeFullyLoaded = true
+	disableVapeV4Menu()
 end
 
 if shared.VapeIndependent then

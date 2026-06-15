@@ -2491,7 +2491,7 @@
 			if argstable["Icon"] then
 				buttonicon = Instance.new("ImageLabel")
 				buttonicon.Active = false
-				buttonicon.Size = UDim2.new(0, argstable["IconSize"] - 2, 0, 14)
+				buttonicon.Size = UDim2.new(0, (argstable["IconSize"] or 16) - 2, 0, 14)
 				buttonicon.BackgroundTransparency = 1
 				buttonicon.Position = UDim2.new(0, 10, 0, 13)
 				buttonicon.ImageColor3 = Color3.fromRGB(160, 160, 160)
